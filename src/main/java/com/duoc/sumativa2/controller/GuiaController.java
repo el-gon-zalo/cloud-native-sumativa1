@@ -1,7 +1,7 @@
-package com.duoc.sumativa1.controller;
+package com.duoc.sumativa2.controller;
 
-import com.duoc.sumativa1.model.Guia;
-import com.duoc.sumativa1.service.GuiaService;
+import com.duoc.sumativa2.model.Guia;
+import com.duoc.sumativa2.service.GuiaService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,10 +21,10 @@ public class GuiaController {
         this.guiaService = guiaService;
     }
 
-    // -------------------------------------------------------
+
     // POST /api/guias
     // Crear una nueva guía de despacho
-    // -------------------------------------------------------
+
     @PostMapping
     public ResponseEntity<Guia> crearGuia(@RequestBody Map<String, Object> body) {
         try {
@@ -45,10 +45,10 @@ public class GuiaController {
         }
     }
 
-    // -------------------------------------------------------
+
     // POST /api/guias/{id}/subir
     // Subir guía existente desde EFS a S3
-    // -------------------------------------------------------
+
     @PostMapping("/{id}/subir")
     public ResponseEntity<Guia> subirGuiaAS3(@PathVariable String id) {
         try {
@@ -61,40 +61,36 @@ public class GuiaController {
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/guias/{id}/descargar?rol=ADMIN
+    
+
+
+    // GET /api/guias/{id}/descargar
     // Descargar guía con validación de permisos
-    // -------------------------------------------------------
+
     @GetMapping("/{id}/descargar")
-    public ResponseEntity<byte[]> descargarGuia(@PathVariable String id,
-                                                 @RequestParam String rol) {
+    public ResponseEntity<byte[]> descargarGuia(@PathVariable String id) {
         try {
-            byte[] contenido = guiaService.descargarGuia(id, rol);
+            byte[] contenido = guiaService.descargarGuia(id);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentDispositionFormData("attachment", "guia_" + id + ".pdf");
             headers.setContentLength(contenido.length);
 
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(contenido);
+            return ResponseEntity.ok().headers(headers).body(contenido);
 
         } catch (RuntimeException e) {
-            if (e.getMessage().contains("Acceso denegado")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
             if (e.getMessage().contains("no encontrada")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
+    }   
 
-    // -------------------------------------------------------
+ 
     // PUT /api/guias/{id}
     // Modificar o actualizar una guía existente
-    // -------------------------------------------------------
+
     @PutMapping("/{id}")
     public ResponseEntity<Guia> modificarGuia(@PathVariable String id,
                                                @RequestBody Map<String, Object> body) {
@@ -113,10 +109,10 @@ public class GuiaController {
         }
     }
 
-    // -------------------------------------------------------
+  
     // DELETE /api/guias/{id}
     // Eliminar una guía específica
-    // -------------------------------------------------------
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarGuia(@PathVariable String id) {
         try {
@@ -131,33 +127,7 @@ public class GuiaController {
         }
     }
 
-/* 
-    // -------------------------------------------------------
-    // GET /api/guias?transportista=X&fecha=20241205
-    // Consultar guías por transportista y fecha
-    // -------------------------------------------------------
-    @GetMapping
-    public ResponseEntity<List<Guia>> consultarGuias(@RequestParam String transportista,
-                                                      @RequestParam String fecha) {
-        try {
-            List<Guia> guias = guiaService.consultarPorTransportistaYFecha(transportista, fecha);
-
-            if (guias.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-            }
-            return ResponseEntity.ok(guias);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
- */
-
-    // -------------------------------------------------------
     // GET /api/guias/{id}
-    // Obtener detalle de una guía por ID
-    // -------------------------------------------------------
     @GetMapping("/{id}")
     public ResponseEntity<Guia> obtenerGuia(@PathVariable String id) {
         try {
@@ -168,4 +138,7 @@ public class GuiaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+
+    
 }

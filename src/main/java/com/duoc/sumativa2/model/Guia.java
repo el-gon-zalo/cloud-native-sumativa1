@@ -1,4 +1,4 @@
-package com.duoc.sumativa1.model;
+package com.duoc.sumativa2.model;
 
 import java.time.LocalDateTime;
 

@@ -1,6 +1,6 @@
-package com.duoc.sumativa1.service;
+package com.duoc.sumativa2.service;
 
-import com.duoc.sumativa1.model.Guia;
+import com.duoc.sumativa2.model.Guia;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -130,27 +130,23 @@ public class GuiaService {
     // DESCARGAR guía
     // Para GET endpoint
     
-    public byte[] descargarGuia(String id, String rol) {
+    public byte[] descargarGuia(String id) {
 
-        if (rol == null || (!rol.equals("ADMIN") && !rol.equals("TRANSPORTISTA"))) {
-            throw new RuntimeException("Acceso denegado: rol sin permisos para descargar guías.");
-        }
+    Guia guia = obtenerGuiaPorId(id);
 
-        Guia guia = obtenerGuiaPorId(id);
+    try {
+        ResponseBytes<GetObjectResponse> objeto = s3Client.getObjectAsBytes(
+            GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(guia.getRutaS3())
+                .build()
+        );
 
-        try {
-            ResponseBytes<GetObjectResponse> objeto = s3Client.getObjectAsBytes(
-                GetObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(guia.getRutaS3())
-                    .build()
-            );
+        guia.setEstado(Guia.EstadoGuia.DESCARGADA);
+        guia.setFechaActualizacion(LocalDateTime.now());
+        db.put(id, guia);
 
-            guia.setEstado(Guia.EstadoGuia.DESCARGADA);
-            guia.setFechaActualizacion(LocalDateTime.now());
-            db.put(id, guia);
-
-            return objeto.asByteArray();
+        return objeto.asByteArray();
 
         } catch (S3Exception e) {
             throw new RuntimeException("Error al descargar guía desde S3: " + e.getMessage(), e);
@@ -230,20 +226,6 @@ public class GuiaService {
 
         db.remove(id);
     }
-
-    /* 
-    // CONSULTAR guías por transportista y fecha
-    // Para GET endpoint
- 
-    public List<Guia> consultarPorTransportistaYFecha(String transportista, String fecha) {
-
-        return db.values().stream()
-                .filter(g -> g.getTransportista().equals(transportista)
-                          && g.getFecha().equals(fecha))
-                .collect(Collectors.toList());
-    }
-    */
-
     
     // OBTENER guía por ID
     //Para GET endpoint

@@ -1,4 +1,4 @@
-package com.duoc.sumativa1.config;
+package com.duoc.sumativa2.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
